@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mapa de Reciclaje Vilcún</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+        #map {
+            flex: 2;
+            height: 100%;
+        }
+        #info {
+            flex: 1;
+            padding: 15px;
+            background-color: #f7f7f7;
+            overflow-y: auto;
+        }
+        h2 {
+            color: #2c7a7b;
+        }
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            #map {
+                height: 50vh;
+            }
+            #info {
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="info">
+        <h2>¿Por qué reciclar?</h2>
+        <p>Reciclar ayuda a reducir la cantidad de basura que llega a vertederos, ahorra recursos naturales y disminuye la contaminación del aire, agua y suelo.</p>
+
+        <h2>Beneficios del reciclaje</h2>
+        <ul>
+            <li>♻️ Reduce la contaminación ambiental</li>
+            <li>🌱 Ahorra energía y recursos naturales</li>
+            <li>🌎 Protege la biodiversidad</li>
+            <li>💼 Genera empleos verdes</li>
+        </ul>
+
+        <h2>¿Qué se hace con los materiales reciclados?</h2>
+        <p>Los plásticos se convierten en nuevos envases, ropa y muebles.  
+           El vidrio se reutiliza para botellas y frascos.  
+           El papel y cartón se transforman en cuadernos, cajas y empaques.  
+           El metal se funde y se usa en nuevas herramientas, autos y estructuras.</p>
+
+        <p style="color: #888; font-size: 12px;">Frecuencia de retiro de puntos de reciclaje: <b>1 vez por semana</b>.</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Puntos de reciclaje
+        const puntos = [
+            {
+                nombre: "Punto Reciclaje Vilcún SECPLAC - Av. Los Andes y Manuel Bulnes",
+                lat: -38.6666473889264,
+                lon: -72.22299420975187,
+                direccion: "Av. Los Andes con Manuel Bulnes, Vilcún",
+                materiales: "Plásticos 1, 2 y 5, plásticos flexibles 4 y 5, aluminios 41",
+                retiro: "1 vez por semana"
+            },
+            {
+                nombre: "Punto Reciclaje Vilcún - Calle Chorrillos",
+                lat: -38.67062670321629,
+                lon: -72.23236754069904,
+                direccion: "Calle Chorrillos, Vilcún",
+                materiales: "Plásticos 1, 2 y 5, plásticos flexibles 4 y 5, aluminios 41, 1 campana y 1 flauta para vidrio",
+                retiro: "1 vez por semana"
+            },
+            {
+                nombre: "Punto Reciclaje Vilcún - Lago Villarrica, Población Victoria",
+                lat: -38.67395773308824,
+                lon: -72.22049344578826,
+                direccion: "Lago Villarrica, área verde Población Victoria, Vilcún",
+                materiales: "Plásticos 1, 2 y 5, plásticos flexibles 4 y 5, aluminios 41",
+                retiro: "1 vez por semana"
+            },
+            {
+                nombre: "Punto Reciclaje Vilcún - Río Viluco, Villa Los Ríos",
+                lat: -38.6751083295649,
+                lon: -72.21621946894554,
+                direccion: "Río Viluco, área verde Villa Los Ríos, Vilcún",
+                materiales: "Plásticos 1, 2 y 5, aluminio",
+                retiro: "1 vez por semana"
+            },
+            {
+                nombre: "Punto Reciclaje San Patricio - Ruta S-31",
+                lat: -38.66062474351874,
+                lon: -72.11495075186899,
+                direccion: "Ruta S-31, San Patricio",
+                materiales: "Plásticos 1, 2 y 5, plásticos flexibles 4 y 5, aluminios 41, 2 campanas para vidrio",
+                retiro: "1 vez por semana"
+            },
+            {
+                nombre: "Punto Reciclaje Cherquenco - Calle Mendoza",
+                lat: -38.68574573416659,
+                lon: -72.00303181402094,
+                direccion: "Calle Mendoza, Cherquenco",
+                materiales: "Plásticos 1, 2 y 5, plásticos flexibles 4 y 5, aluminios 41",
+                retiro: "1 vez por semana"
+            }
+        ];
+
+        // Inicializar mapa
+        const map = L.map('map').setView([-38.6666, -72.2229], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Mostrar puntos en el mapa
+        puntos.forEach(p => {
+            L.marker([p.lat, p.lon])
+              .addTo(map)
+              .bindPopup(`<b>${p.nombre}</b><br>${p.direccion}<br>${p.materiales}<br>${p.retiro}`);
+        });
+
+        // Funciones para calcular distancia y punto más cercano
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function encontrarMasCercano(userLat, userLon, puntos) {
+            let minDist = Infinity;
+            let nearest = null;
+            puntos.forEach(p => {
+                const d = haversineDistance(userLat, userLon, p.lat, p.lon);
+                if (d < minDist) {
+                    minDist = d;
+                    nearest = p;
+                }
+            });
+            return nearest;
+        }
+
+        // Obtener ubicación del usuario y trazar ruta
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const userLat = position.coords.latitude;
+                const userLon = position.coords.longitude;
+
+                // Marcador del usuario
+                L.marker([userLat, userLon], {icon: L.icon({iconUrl:'https://leafletjs.com/examples/custom-icons/leaf-red.png', iconSize:[25,41], iconAnchor:[12,41]})})
+                  .addTo(map)
+                  .bindPopup("¡Tú estás aquí!")
+                  .openPopup();
+
+                const nearest = encontrarMasCercano(userLat, userLon, puntos);
+
+                // Trazar ruta con OpenRouteService
+                const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM4NzgxZWI2Y2JiZTQ3NDBiNmNkMTIyNGY2Yjk1MjU2IiwiaCI6Im11cm11cjY0In0="; // reemplaza con tu API Key
+                fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${userLon},${userLat}&end=${nearest.lon},${nearest.lat}`)
+                  .then(res => res.json())
+                  .then(data => {
+                      const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                      L.polyline(coords, {color:'blue', weight:4}).addTo(map);
+                  })
+                  .catch(err => console.error(err));
+            });
+        }
+    </script>
+</body>
+</html>
