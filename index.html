@@ -25,6 +25,17 @@
         h2 {
             color: #2c7a7b;
         }
+        .frase {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            color: #264653;
+            margin: 20px 0;
+        }
+        #distancia {
+            margin-top: 10px;
+            font-weight: bold;
+        }
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -58,12 +69,28 @@
            El papel y cartón se transforman en cuadernos, cajas y empaques.  
            El metal se funde y se usa en nuevas herramientas, autos y estructuras.</p>
 
+        <!-- Nueva información -->
+        <h2>🌱 Impacto de no reciclar</h2>
+        <p>Cada bolsa plástica puede tardar hasta <b>400 años</b> en descomponerse.</p>
+        <p>Una sola pila mal desechada puede contaminar <b>600 mil litros de agua potable</b>.</p>
+        <p>El <b>70% de la basura</b> en vertederos podría haberse reciclado o reutilizado.</p>
+        <p>Cada kilo de papel reciclado ahorra <b>20 litros de agua</b> (equivalente a una ducha corta).</p>
+
+        <h2>🌍 Resultados</h2>
+        <p>En países como Alemania o Suecia, más del <b>90% de los residuos</b> se reciclan o reutilizan, generando ciudades más limpias y energías más baratas.</p>
+        <p>En Chile, iniciativas comunitarias de reciclaje han financiado becas, áreas verdes y proyectos sociales.</p>
+
+        <!-- Frase llamativa en medio -->
+        <div class="frase">Si cada persona reciclara solo una botella al día, en un año tendríamos más de 7.000 millones de razones para creer en el cambio.</div>
+
         <p style="color: #888; font-size: 12px;">Frecuencia de retiro de puntos de reciclaje: <b>1 vez por semana</b>.</p>
+
+        <!-- Distancia al punto más cercano -->
+        <p id="distancia"></p>
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // Puntos de reciclaje
         const puntos = [
             {
                 nombre: "Punto Reciclaje Vilcún SECPLAC - Av. Los Andes y Manuel Bulnes",
@@ -115,7 +142,6 @@
             }
         ];
 
-        // Inicializar mapa
         const map = L.map('map').setView([-38.6666, -72.2229], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -129,14 +155,13 @@
               .bindPopup(`<b>${p.nombre}</b><br>${p.direccion}<br>${p.materiales}<br>${p.retiro}`);
         });
 
-        // Funciones para calcular distancia y punto más cercano
         function haversineDistance(lat1, lon1, lat2, lon2) {
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            const a = Math.sin(dLat/2) ** 2 +
                       Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
+                      Math.sin(dLon/2) ** 2;
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
         }
@@ -151,25 +176,31 @@
                     nearest = p;
                 }
             });
-            return nearest;
+            return { nearest, minDist };
         }
 
-        // Obtener ubicación del usuario y trazar ruta
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
                 const userLat = position.coords.latitude;
                 const userLon = position.coords.longitude;
 
-                // Marcador del usuario
-                L.marker([userLat, userLon], {icon: L.icon({iconUrl:'https://leafletjs.com/examples/custom-icons/leaf-red.png', iconSize:[25,41], iconAnchor:[12,41]})})
-                  .addTo(map)
+                L.marker([userLat, userLon], {
+                    icon: L.icon({
+                        iconUrl:'https://leafletjs.com/examples/custom-icons/leaf-red.png',
+                        iconSize:[25,41],
+                        iconAnchor:[12,41]
+                    })
+                }).addTo(map)
                   .bindPopup("¡Tú estás aquí!")
                   .openPopup();
 
-                const nearest = encontrarMasCercano(userLat, userLon, puntos);
+                const { nearest, minDist } = encontrarMasCercano(userLat, userLon, puntos);
+
+                document.getElementById("distancia").innerText =
+                    `El punto más cercano es "${nearest.nombre}" a ${minDist.toFixed(2)} km de distancia.`;
 
                 // Trazar ruta con OpenRouteService
-                const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM4NzgxZWI2Y2JiZTQ3NDBiNmNkMTIyNGY2Yjk1MjU2IiwiaCI6Im11cm11cjY0In0="; // reemplaza con tu API Key
+                const apiKey = "TU_API_KEY_AQUI"; // reemplaza con tu API Key
                 fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${userLon},${userLat}&end=${nearest.lon},${nearest.lat}`)
                   .then(res => res.json())
                   .then(data => {
