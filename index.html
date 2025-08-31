@@ -200,7 +200,7 @@
                     `El punto más cercano es "${nearest.nombre}" a ${minDist.toFixed(2)} km de distancia.`;
 
                 // Trazar ruta con OpenRouteService
-                const apiKey = "TU_API_KEY_AQUI"; // reemplaza con tu API Key
+                const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM4NzgxZWI2Y2JiZTQ3NDBiNmNkMTIyNGY2Yjk1MjU2IiwiaCI6Im11cm11cjY0In0="; // reemplaza con tu API Key
                 fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${userLon},${userLat}&end=${nearest.lon},${nearest.lat}`)
                   .then(res => res.json())
                   .then(data => {
